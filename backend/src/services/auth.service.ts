@@ -1,0 +1,7 @@
+import bcrypt from 'bcryptjs'; import jwt from 'jsonwebtoken'; import { prisma } from '../prisma/client.js'; import { env } from '../config/env.js'; import { AppError } from '../utils/http.js';
+const publicUser={id:true,firstName:true,lastName:true,username:true,email:true,phoneNumber:true,avatarUrl:true,city:true,role:true,rating:true,reviewCount:true,successfulGroupBuys:true,isVerified:true,createdAt:true} as const;
+export const AuthService={
+ async register(input:{firstName:string;lastName:string;username:string;email:string;password:string;city:string}){const passwordHash=await bcrypt.hash(input.password,12);const user=await prisma.user.create({data:{...input,email:input.email.toLowerCase(),passwordHash},select:publicUser});return {user,token:jwt.sign({id:user.id,role:user.role},env.JWT_SECRET,{expiresIn:env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']})}},
+ async login(email:string,password:string){const found=await prisma.user.findUnique({where:{email:email.toLowerCase()}});if(!found||!await bcrypt.compare(password,found.passwordHash))throw new AppError(401,'INVALID_CREDENTIALS','Email or password is incorrect.');if(found.isSuspended)throw new AppError(403,'SUSPENDED','This account is suspended.');const {passwordHash:_,...user}=found;return {user,token:jwt.sign({id:found.id,role:found.role},env.JWT_SECRET,{expiresIn:env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']})}},
+ async me(id:string){const user=await prisma.user.findUnique({where:{id},select:publicUser});if(!user)throw new AppError(404,'NOT_FOUND','User not found.');return user}
+};

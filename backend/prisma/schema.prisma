@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PromotionType {
+  BUY_X_GET_DISCOUNT
+  BUY_X_GET_Y_FREE
+  PERCENTAGE_DISCOUNT
+  FIXED_DISCOUNT
+  MINIMUM_SPEND
+  OTHER
+}
+
+enum PromotionStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  EXPIRED
+  DISABLED
+}
+
+enum GroupStatus {
+  OPEN
+  FULL
+  AWAITING_CONFIRMATION
+  AWAITING_PAYMENT
+  READY_TO_PURCHASE
+  PURCHASED
+  DELIVERING
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+enum DeliveryMethod {
+  MEETUP
+  SINGLE_ADDRESS
+  INDIVIDUAL_DELIVERY
+  UNDECIDED
+}
+
+enum MemberStatus {
+  JOINED
+  CONFIRMED
+  PAYMENT_CONFIRMED
+  RECEIVED
+  LEFT
+  REMOVED
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  firstName           String
+  lastName            String
+  username            String           @unique
+  email               String           @unique
+  passwordHash        String
+  phoneNumber         String?
+  avatarUrl           String?
+  city                String
+  role                Role             @default(USER)
+  rating              Float            @default(0)
+  reviewCount         Int              @default(0)
+  successfulGroupBuys Int              @default(0)
+  isVerified          Boolean          @default(false)
+  isSuspended         Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  promotions          Promotion[]      @relation("PromotionCreator")
+  createdGroups       BuyingGroup[]    @relation("GroupCreator")
+  memberships         GroupMember[]
+  productRequests     ProductRequest[]
+  messages            Message[]
+  payments            Payment[]
+  purchases           Purchase[]
+  reviewsWritten      Review[]         @relation("ReviewWriter")
+  reviewsReceived     Review[]         @relation("ReviewSubject")
+  reportsMade         Report[]         @relation("Reporter")
+  reportsReceived     Report[]         @relation("ReportedUser")
+  notifications       Notification[]
+  favorites           Favorite[]
+  blocksMade          Block[]          @relation("Blocker")
+  blocksReceived      Block[]          @relation("Blocked")
+}
+
+model Store {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String
+  websiteUrl  String
+  logoUrl     String?
+  city        String?
+  isVerified  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  promotions  Promotion[]
+
+  @@index([isVerified])
+}
+
+model Promotion {
+  id                 String           @id @default(cuid())
+  storeId            String
+  createdByUserId    String
+  title              String
+  description        String
+  promotionType      PromotionType
+  requiredQuantity   Int
+  discountPercentage Float?
+  discountAmount     Decimal?         @db.Decimal(10, 2)
+  freeItemsQuantity  Int?
+  minimumSpend       Decimal?         @db.Decimal(10, 2)
+  promoCode          String?
+  promotionUrl       String
+  imageUrl           String?
+  category           String
+  city               String?
+  startsAt           DateTime?
+  expiresAt          DateTime
+  status             PromotionStatus  @default(PENDING)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  store              Store            @relation(fields: [storeId], references: [id])
+  createdBy          User             @relation("PromotionCreator", fields: [createdByUserId], references: [id])
+  groups             BuyingGroup[]
+  productRequests    ProductRequest[]
+  favorites          Favorite[]
+  reports            Report[]
+
+  @@index([status])
+  @@index([city])
+  @@index([category])
+  @@index([storeId])
+  @@index([expiresAt])
+}
+
+model BuyingGroup {
+  id               String           @id @default(cuid())
+  promotionId      String
+  creatorId        String
+  title            String
+  city             String
+  requiredQuantity Int
+  currentQuantity  Int              @default(0)
+  status           GroupStatus      @default(OPEN)
+  deliveryMethod   DeliveryMethod   @default(UNDECIDED)
+  meetupCity       String?
+  meetupArea       String?
+  meetupDate       DateTime?
+  meetupNotes      String?
+  expiresAt        DateTime
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  promotion        Promotion        @relation(fields: [promotionId], references: [id])
+  creator          User             @relation("GroupCreator", fields: [creatorId], references: [id])
+  members          GroupMember[]
+  productRequests  ProductRequest[]
+  messages         Message[]
+  payments         Payment[]
+  purchase         Purchase?
+  reviews          Review[]
+  reports          Report[]
+
+  @@index([promotionId, status])
+  @@index([city, status])
+}
+
+model GroupMember {
+  id       String       @id @default(cuid())
+  groupId  String
+  userId   String
+  quantity Int
+  status   MemberStatus @default(JOINED)
+  joinedAt DateTime     @default(now())
+  group    BuyingGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+  @@index([userId, status])
+}
+
+model ProductRequest {
+  id              String      @id @default(cuid())
+  userId          String
+  promotionId     String
+  groupId         String
+  productName     String
+  productUrl      String
+  productImageUrl String?
+  variant         String?
+  size            String?
+  color           String?
+  quantity        Int
+  unitPrice       Decimal?    @db.Decimal(10, 2)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id])
+  promotion       Promotion   @relation(fields: [promotionId], references: [id])
+  group           BuyingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  groupId   String
+  senderId  String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  group     BuyingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender    User        @relation(fields: [senderId], references: [id])
+
+  @@index([groupId, createdAt])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  groupId           String
+  userId            String
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("MAD")
+  provider          String        @default("MOCK")
+  status            PaymentStatus @default(PENDING)
+  providerReference String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  group             BuyingGroup   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+model Purchase {
+  id                  String      @id @default(cuid())
+  groupId             String      @unique
+  purchasedByUserId   String
+  externalOrderNumber String?
+  purchaseNotes       String?
+  purchasedAt         DateTime    @default(now())
+  group               BuyingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  purchasedBy         User        @relation(fields: [purchasedByUserId], references: [id])
+}
+
+model Review {
+  id             String      @id @default(cuid())
+  reviewerId     String
+  reviewedUserId String
+  groupId        String
+  rating         Int
+  comment        String?
+  createdAt      DateTime    @default(now())
+  reviewer       User        @relation("ReviewWriter", fields: [reviewerId], references: [id])
+  reviewedUser   User        @relation("ReviewSubject", fields: [reviewedUserId], references: [id])
+  group          BuyingGroup @relation(fields: [groupId], references: [id])
+
+  @@unique([reviewerId, reviewedUserId, groupId])
+  @@index([reviewedUserId])
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  reporterId     String
+  reportedUserId String?
+  promotionId    String?
+  groupId        String?
+  reason         String
+  description    String?
+  status         ReportStatus @default(OPEN)
+  createdAt      DateTime     @default(now())
+  reporter       User         @relation("Reporter", fields: [reporterId], references: [id])
+  reportedUser   User?        @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  promotion      Promotion?   @relation(fields: [promotionId], references: [id])
+  group          BuyingGroup? @relation(fields: [groupId], references: [id])
+
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  entityId  String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model Favorite {
+  id          String    @id @default(cuid())
+  userId      String
+  promotionId String
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, promotionId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}

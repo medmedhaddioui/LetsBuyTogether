@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-jme3na}"
+      POSTGRES_USER: "${POSTGRES_USER:-jme3na}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-development_only}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: "${DATABASE_URL:-postgresql://jme3na:development_only@postgres:5432/jme3na?schema=public}"
+      JWT_SECRET: "${JWT_SECRET:-local-development-secret-change-me-12345}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
+      PORT: "4000"
+      FRONTEND_URL: "${FRONTEND_URL:-http://localhost:5173}"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: "${VITE_API_URL:-http://localhost:4000/api}"
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
