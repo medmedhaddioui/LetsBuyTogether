@@ -27,7 +27,7 @@ export function Home() {
           </h1>
           <div className="hero-bottom">
             <p>
-              That thing you’ve had your eye on?
+              That thing you've had your eye on?
               <br />
               Find your people. Buy it together.
             </p>
@@ -36,10 +36,12 @@ export function Home() {
             </span>
           </div>
         </div>
+
         <div className="choice-grid">
+          {/* Card 1 — Post a product / Login */}
           <Link
             className="choice-card choice-post group"
-            to={user ? "/create-promotion" : "/register?next=/create-promotion"}
+            to={user ? "/search" : "/register"}
           >
             <div className="choice-top">
               <span className="choice-kicker">01 / START SOMETHING</span>
@@ -57,7 +59,8 @@ export function Home() {
                 <span className="note-avatar">
                   <Users size={16} />
                 </span>{" "}
-                Looking for a buying buddy <span className="note-plus">+</span>
+                Looking for a buying buddy{" "}
+                <span className="note-plus">+</span>
               </div>
             </div>
             <div className="choice-copy">
@@ -67,21 +70,23 @@ export function Home() {
                 Now find your people.
               </h2>
               <p>
-                Post a product you want to buy and connect with someone to share
-                the purchase.
+                Join a community of Moroccan shoppers splitting great deals
+                together. Start here.
               </p>
             </div>
             <div className="choice-action">
-              <span>Post a product</span>
+              <span>{user ? "Go to my account" : "Create a free account"}</span>
               <ArrowUpRight size={23} />
             </div>
             <span className="choice-footnote">
               {user
-                ? "Your next shared purchase starts here"
-                : "A free account is all you need"}
+                ? `Logged in as ${user.firstName}`
+                : "Takes less than a minute"}
             </span>
           </Link>
-          <Link className="choice-card choice-search group" to="/promotions">
+
+          {/* Card 2 — Browse deals */}
+          <Link className="choice-card choice-search group" to="/search">
             <div className="choice-top">
               <span className="choice-kicker">02 / FIND YOUR MATCH</span>
               <span className="choice-icon">
@@ -113,7 +118,7 @@ export function Home() {
               <h2>
                 Someone found it.
                 <br />
-                Maybe it’s your thing.
+                Maybe it's your thing.
               </h2>
               <p>
                 Explore products already listed by the community. Find a match
@@ -121,7 +126,7 @@ export function Home() {
               </p>
             </div>
             <div className="choice-action">
-              <span>Explore products</span>
+              <span>Browse deals</span>
               <ArrowUpRight size={23} />
             </div>
             <span className="choice-footnote">
@@ -129,6 +134,7 @@ export function Home() {
             </span>
           </Link>
         </div>
+
         <div className="home-bottom">
           <span>
             <span className="live-dot" /> Made for shopping together in Morocco

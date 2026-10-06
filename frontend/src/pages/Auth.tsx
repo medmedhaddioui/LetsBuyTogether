@@ -1,143 +1,170 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { z } from "zod";
-import { useAuth } from "../contexts/AuthContext";
 import { forwardRef, useState } from "react";
-import { ErrorBox } from "../components/ui";
-const loginS = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../contexts/AuthContext";
+import { ShoppingBag } from "lucide-react";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
 });
-const regS = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  username: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(8),
-  city: z.string().min(2),
+
+const registerSchema = z.object({
+  firstName: z.string().min(1, "First name is required."),
+  lastName: z.string().min(1, "Last name is required."),
+  username: z.string().min(3, "Username must be at least 3 characters."),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+  city: z.string().min(2, "Please enter your city."),
 });
-type V = z.infer<typeof regS>;
-export function AuthPage({ register = false }: { register?: boolean }) {
-  const schema = register ? regS : loginS;
+
+type LoginValues = z.infer<typeof loginSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
+
+export function AuthPage({ register: isRegister = false }: { register?: boolean }) {
+  const schema = isRegister ? registerSchema : loginSchema;
   const {
-    register: field,
+    register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<V>({ resolver: zodResolver(schema) });
-  const auth = useAuth(),
-    nav = useNavigate();
-  const [params] = useSearchParams();
-  const next =
-    params.get("next") === "/create-promotion"
-      ? "/create-promotion"
-      : "/dashboard";
-  const suffix = next === "/create-promotion" ? "?next=/create-promotion" : "";
+  } = useForm<RegisterValues>({ resolver: zodResolver(schema as z.ZodType<RegisterValues>) });
+
+  const auth = useAuth();
+  const nav = useNavigate();
   const [error, setError] = useState("");
-  const submit = async (v: V) => {
+
+  const submit = async (v: RegisterValues) => {
     try {
       setError("");
-      if (register) await auth.register(v);
-      else await auth.login(v.email, v.password);
-      nav(next);
+      if (isRegister) {
+        await auth.register(v);
+      } else {
+        await auth.login(v.email, v.password);
+      }
+      nav("/search");
     } catch (e) {
       setError((e as Error).message);
     }
   };
+
   return (
-    <div className="container-page py-16">
-      <div className="card mx-auto max-w-lg p-7 sm:p-10">
-        <h1 className="text-3xl">
-          {register ? "Create your account" : "Welcome back"}
+    <div className="auth-page">
+      <div className="auth-card">
+        {/* Logo */}
+        <div className="auth-logo">
+          <span className="brand-mark">
+            <ShoppingBag size={20} strokeWidth={2} />
+          </span>
+          <span className="auth-brand-name">LetsBuyTogether</span>
+        </div>
+
+        <h1 className="auth-title">
+          {isRegister ? "Create your account" : "Welcome back"}
         </h1>
-        <p className="mt-2 text-slate-500">
-          {register
-            ? next === "/create-promotion"
-              ? "Create a free account, then post your product to find a buying partner."
-              : "Join Moroccan shoppers saving together."
+        <p className="auth-subtitle">
+          {isRegister
+            ? "Join thousands of Moroccan shoppers saving together."
             : "Continue coordinating your group buys."}
         </p>
-        {error && (
-          <div className="mt-5">
-            <ErrorBox message={error} />
-          </div>
-        )}
-        <form className="mt-7 grid gap-5" onSubmit={handleSubmit(submit)}>
-          {register && (
-            <div className="grid gap-4 sm:grid-cols-2">
+
+        {error && <div className="auth-error">{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSubmit(submit)}>
+          {isRegister && (
+            <div className="auth-row-2">
               <Field
                 label="First name"
+                placeholder="Youssef"
                 error={errors.firstName?.message}
-                {...field("firstName")}
+                {...register("firstName")}
               />
               <Field
                 label="Last name"
+                placeholder="El Khalidi"
                 error={errors.lastName?.message}
-                {...field("lastName")}
+                {...register("lastName")}
               />
             </div>
           )}
-          {register && (
+
+          {isRegister && (
             <Field
               label="Username"
+              placeholder="youssef_k"
               error={errors.username?.message}
-              {...field("username")}
+              {...register("username")}
             />
           )}
+
           <Field
-            label="Email"
+            label="Email address"
             type="email"
+            placeholder="you@example.ma"
             error={errors.email?.message}
-            {...field("email")}
+            {...register("email")}
           />
+
           <Field
             label="Password"
             type="password"
+            placeholder={isRegister ? "Minimum 8 characters" : "Your password"}
             error={errors.password?.message}
-            {...field("password")}
+            {...register("password")}
           />
-          {register && (
+
+          {isRegister && (
             <Field
               label="City"
+              placeholder="Casablanca"
               error={errors.city?.message}
-              {...field("city")}
+              {...register("city")}
             />
           )}
-          <button disabled={isSubmitting} className="btn-primary">
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="auth-submit"
+          >
             {isSubmitting
               ? "Please wait…"
-              : register
+              : isRegister
                 ? "Create account"
                 : "Log in"}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
-          {register ? "Already a member?" : "New to LetsBuyTogether?"}{" "}
-          <Link
-            className="font-semibold text-brand-700"
-            to={(register ? "/login" : "/register") + suffix}
-          >
-            {register ? "Log in" : "Create an account"}
+
+        <p className="auth-switch">
+          {isRegister ? "Already a member?" : "New to LetsBuyTogether?"}{" "}
+          <Link to={isRegister ? "/login" : "/register"} className="auth-switch-link">
+            {isRegister ? "Log in" : "Create a free account"}
           </Link>
         </p>
+
+        {!isRegister && (
+          <p className="auth-demo-hint">
+            Demo: use any email + password (6+ chars)
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
 const Field = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement> & {
     label: string;
     error?: string;
   }
->(function Field({ label, error, ...p }, ref) {
+>(function Field({ label, error, ...props }, ref) {
   return (
-    <label>
+    <label className="auth-field-wrap">
       <span className="label">{label}</span>
-      <input ref={ref} className="field" {...p} />
-      {error && (
-        <span className="mt-1 block text-xs text-red-600">{error}</span>
-      )}
+      <input ref={ref} className={`field auth-field ${error ? "field-error" : ""}`} {...props} />
+      {error && <span className="auth-field-error">{error}</span>}
     </label>
   );
 });
