@@ -8,10 +8,7 @@ export default {
         white: color("surface"),
         ink: color("text"),
         slate: Object.fromEntries(
-          [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((n) => [
-            n,
-            color(`slate-${n}`),
-          ]),
+          [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((n) => [n, color(`slate-${n}`)]),
         ),
         brand: Object.fromEntries(
           [50, 100, 500, 600, 700, 900].map((n) => [n, color(`brand-${n}`)]),

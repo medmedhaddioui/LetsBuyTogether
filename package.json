@@ -1,12 +1,19 @@
 {
-  "name": "jme3na",
+  "name": "letsbuytogether",
   "private": true,
   "scripts": {
-    "dev": "docker compose up --build",
-    "install:all": "npm --prefix frontend install",
-    "build": "npm --prefix frontend run build",
-    "lint": "npm --prefix frontend run lint",
-    "format": "prettier --write ."
+    "dev": "npm run dev:back",
+    "install": "npm --prefix frontend install && npm --prefix backend install",
+    "install:all": "npm run install",
+    "dev:front": "npm --prefix frontend run dev",
+    "dev:back": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build",
+    "lint": "npm --prefix frontend run lint && npm --prefix backend run lint",
+    "format": "prettier --write .",
+    "start": "npm --prefix backend start",
+    "test": "npm --prefix backend test",
+    "dev:all": "npm --prefix backend run dev:all",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "prettier": "^3.3.3"

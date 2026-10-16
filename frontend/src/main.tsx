@@ -1,13 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import App from "./App";
-import "./index.css";
+import App from "./app/App";
+import { AuthProvider } from "./features/auth/components/AuthProvider";
+
+import "./styles/global.css";
 
 try {
   document.documentElement.dataset.theme =
-    localStorage.getItem("jme3na-theme") === "light" ? "light" : "dark";
+    localStorage.getItem("letsbuytogether-theme") === "light" ? "light" : "dark";
 } catch {
   document.documentElement.dataset.theme = "dark";
 }

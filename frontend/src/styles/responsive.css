@@ -1,0 +1,73 @@
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .welcome-page {
+    padding-top: 40px;
+  }
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-prompt {
+    display: none;
+  }
+  .choice-card {
+    padding: 23px;
+  }
+  .choice-copy h2 {
+    font-size: 30px;
+  }
+  .home-bottom > span:last-child {
+    display: none;
+  }
+  .auth-card {
+    padding: 30px 24px;
+  }
+  .auth-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .search-bar {
+    flex-wrap: wrap;
+  }
+  .search-submit {
+    flex: 1;
+  }
+  .filter-select {
+    max-width: 100%;
+  }
+  .modal-img {
+    height: 200px;
+  }
+  .modal-body {
+    padding: 18px 20px 22px;
+  }
+}
+@media (max-width: 420px) {
+  .site-header .wordmark {
+    font-size: 17px;
+    letter-spacing: -0.6px;
+    gap: 6px;
+  }
+  .site-header .brand-mark {
+    width: 28px;
+    height: 30px;
+  }
+  .site-header .theme-toggle {
+    width: 34px;
+    height: 34px;
+  }
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .choice-card:hover,
+  .choice-card:hover .choice-action svg,
+  .promo-card:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+  --page: #090909;
+  --surface: 20 20 20;
+  --text: 244 244 241;
+  --muted: #999996;
+  --line: #2b2b2a;
+  --raised: #1e1e1d;
+  --accent: #3b82f6;
+  --button: #eeeeea;
+  --button-text: #141414;
+  --slate-50: 25 25 25;
+  --slate-100: 32 32 32;
+  --slate-200: 47 47 47;
+  --slate-300: 65 65 65;
+  --slate-400: 150 150 150;
+  --slate-500: 166 166 166;
+  --slate-600: 186 186 186;
+  --slate-700: 209 209 209;
+  --slate-800: 228 228 228;
+  --slate-900: 245 245 245;
+  --brand-50: 20 30 49;
+  --brand-100: 30 48 77;
+  --brand-500: 96 165 250;
+  --brand-600: 147 197 253;
+  --brand-700: 147 197 253;
+  --brand-900: 219 234 254;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #fafafa;
+  --surface: 255 255 252;
+  --text: 24 24 24;
+  --muted: #696963;
+  --line: #ddddd5;
+  --raised: #eeeee7;
+  --accent: #3b82f6;
+  --button: #191919;
+  --button-text: #fafaf5;
+  --slate-50: 245 245 240;
+  --slate-100: 237 237 230;
+  --slate-200: 222 222 215;
+  --slate-300: 200 200 193;
+  --slate-400: 124 124 117;
+  --slate-500: 105 105 99;
+  --slate-600: 80 80 74;
+  --slate-700: 61 61 55;
+  --slate-800: 40 40 35;
+  --slate-900: 24 24 24;
+  --brand-50: 239 246 255;
+  --brand-100: 219 234 254;
+  --brand-500: 59 130 246;
+  --brand-600: 37 99 235;
+  --brand-700: 29 78 216;
+  --brand-900: 30 58 138;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  body {
+    background: var(--page);
+    color: rgb(var(--text));
+    font-family: "DM Sans", sans-serif;
+    @apply antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: "Manrope", sans-serif;
+    @apply tracking-tight;
+  }
+  button,
+  a {
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  input,
+  select,
+  textarea {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand-600));
+    outline-offset: 4px;
+  }
+  ::selection {
+    background: #3b82f6;
+    color: #171717;
+  }
+}
+
+/* ── Shared component classes ──────────────────────────────────────────────── */
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn;
+    background: var(--button);
+    color: var(--button-text);
+  }
+  .btn-primary:hover {
+    opacity: 0.85;
+  }
+  .btn-secondary {
+    @apply btn;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: rgb(var(--text));
+  }
+  .btn-secondary:hover {
+    background: var(--raised);
+  }
+  .field {
+    @apply w-full rounded-xl px-4 py-3 text-sm;
+    border: 1px solid var(--line);
+    background: rgb(var(--surface));
+    color: rgb(var(--text));
+    transition: border-color 0.15s;
+  }
+  .field:focus {
+    border-color: var(--accent);
+  }
+  .field.field-error {
+    border-color: #ef4444;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide;
+    color: var(--muted);
+  }
+  .badge {
+    @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+}
