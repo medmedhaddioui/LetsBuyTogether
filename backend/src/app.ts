@@ -28,7 +28,12 @@ export function createApp({ frontend, staticDirectory }: AppOptions = {}) {
     }),
   );
   app.use(express.json({ limit: "100kb" }));
-  if (env.NODE_ENV !== "test") app.use(morgan("dev"));
+  if (env.NODE_ENV !== "test")
+    app.use(
+      morgan(":method :url :status :response-time ms", {
+        skip: (request) => /^\/api\/auth\/google(?:\/|$)/i.test(request.path),
+      }),
+    );
   app.use("/api", rateLimit({ windowMs: 60_000, limit: 200, standardHeaders: "draft-7" }));
   app.use("/api", apiRoutes);
   const notFound: RequestHandler = (_req, res) => {

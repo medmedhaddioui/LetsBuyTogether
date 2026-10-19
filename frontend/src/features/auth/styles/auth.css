@@ -117,3 +117,41 @@
   margin-top: 12px;
   opacity: 0.7;
 }
+
+.google-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 28px;
+  padding: 14px 18px;
+  border: 1px solid #747775;
+  border-radius: 12px;
+  background: #fff;
+  color: #1f1f1f;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.google-signin:hover {
+  background: #f2f5fa;
+}
+.google-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.auth-setup-message {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.test-signup {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.test-signup h2 {
+  font-size: 17px;
+  font-weight: 700;
+}

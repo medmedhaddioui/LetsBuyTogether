@@ -1,10 +1,13 @@
 import jwt from "jsonwebtoken";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 process.env.JWT_SECRET ??= "test-secret-at-least-sixteen";
 const { app } = await import("../../src/app.js");
 const { env } = await import("../../src/config/env.js");
+const { AuthService } = await import("../../src/modules/auth/auth.service.js");
+const { AppError } = await import("../../src/http/app-error.js");
+afterEach(() => vi.restoreAllMocks());
 const token = jwt.sign({ id: "member-1", role: "USER" }, env.JWT_SECRET);
 const adminToken = jwt.sign({ id: "admin-1", role: "ADMIN" }, env.JWT_SECRET);
 
@@ -14,6 +17,11 @@ describe("feature routes without persistent storage", () => {
     ["patch", "/api/notifications/read-all"],
     ["post", "/api/reports"],
     ["post", "/api/reviews"],
+    ["post", "/api/product-posts"],
+    ["post", "/api/product-searches"],
+    ["get", "/api/product-posts/mine"],
+    ["get", "/api/product-searches/mine"],
+    ["patch", "/api/auth/preference"],
     ["get", "/api/groups/example/messages"],
     ["get", "/api/users/me/favorites"],
   ] as const)("keeps %s %s protected", async (method, path) => {
@@ -35,17 +43,19 @@ describe("feature routes without persistent storage", () => {
     expect(response.body.error.code).toBe("STORAGE_UNAVAILABLE");
   });
 
-  it("does not pretend to save a registration while storage is disabled", async () => {
-    const response = await request(app).post("/api/auth/register").send({
-      firstName: "Demo",
-      lastName: "User",
+  it("reports an unavailable account database without claiming success", async () => {
+    vi.spyOn(AuthService, "login").mockRejectedValue(
+      new AppError(503, "DATABASE_UNAVAILABLE", "Account service is unavailable."),
+    );
+    const response = await request(app).post("/api/auth/login").send({
+      address: "12 Test Street",
       username: "demo_user",
       email: "demo@example.com",
       password: "Example123!",
       city: "Casablanca",
     });
     expect(response.status).toBe(503);
-    expect(response.body.error.code).toBe("STORAGE_UNAVAILABLE");
+    expect(response.body.error.code).toBe("DATABASE_UNAVAILABLE");
   });
 
   it("applies the same storage response to authorized admin endpoints", async () => {

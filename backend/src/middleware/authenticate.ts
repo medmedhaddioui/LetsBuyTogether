@@ -4,10 +4,23 @@ import { env } from "../config/env.js";
 import { AppError } from "../http/app-error.js";
 
 export const optionalAuth: RequestHandler = (req, _res, next) => {
-  const token = req.headers.authorization?.replace(/^Bearer /, "");
+  const cookieToken = req.headers.cookie
+    ?.split(";")
+    .map((value) => value.trim())
+    .find((value) => value.startsWith("lbt_session="))
+    ?.slice("lbt_session=".length);
+  const token = req.headers.authorization?.replace(/^Bearer /, "") || cookieToken;
   if (token) {
     try {
-      req.user = jwt.verify(token, env.JWT_SECRET) as { id: string; role: "USER" | "ADMIN" };
+      const payload = jwt.verify(token, env.JWT_SECRET);
+      if (
+        typeof payload !== "string" &&
+        typeof payload.id === "string" &&
+        !(payload.testAccount === true && env.NODE_ENV !== "development") &&
+        (payload.role === "USER" || payload.role === "ADMIN")
+      ) {
+        req.user = { id: payload.id, role: payload.role };
+      }
     } catch {}
   }
   next();

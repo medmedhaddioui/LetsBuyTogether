@@ -4,15 +4,17 @@ export interface AuthValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
-  logout: () => void;
+  testSignIn: (email: string) => Promise<User>;
+  updateAvatar: (file: File | null) => Promise<void>;
+  completeProfile: (input: ProfileInput) => Promise<void>;
+  logout: () => Promise<void>;
+  choosePreference: (preference: "search" | "post") => Promise<void>;
 }
 
-export interface RegisterInput {
-  firstName: string;
-  lastName: string;
+export interface ProfileInput {
   username: string;
-  email: string;
-  password: string;
+  phone?: string;
+  bio?: string;
+  address: string;
   city: string;
 }

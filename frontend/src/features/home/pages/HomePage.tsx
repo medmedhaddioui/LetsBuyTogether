@@ -40,7 +40,7 @@ export function HomePage() {
 
         <div className="choice-grid">
           {/* Card 1 — Post a product / Login */}
-          <Link className="choice-card choice-post group" to={user ? "/search" : "/register"}>
+          <Link className="choice-card choice-post group" to={user ? "/profile" : "/register"}>
             <div className="choice-top">
               <span className="choice-kicker">01 / START SOMETHING</span>
               <span className="choice-icon">
@@ -75,7 +75,7 @@ export function HomePage() {
               <ArrowUpRight size={23} />
             </div>
             <span className="choice-footnote">
-              {user ? `Logged in as ${user.firstName}` : "Takes less than a minute"}
+              {user ? `Logged in as ${user.username}` : "Takes less than a minute"}
             </span>
           </Link>
 

@@ -1,4 +1,16 @@
-import { Menu, Moon, Search, ShoppingBag, Sun, X } from "lucide-react";
+import {
+  Menu,
+  Moon,
+  ShoppingBag,
+  Sun,
+  X,
+  LayoutDashboard,
+  UserRound,
+  PackagePlus,
+  ListFilter,
+  Activity,
+  LogOut,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
@@ -7,6 +19,7 @@ import { useAuth } from "../../features/auth/hooks/use-auth";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const [theme, setTheme] = useState(() =>
     document.documentElement.dataset.theme === "light" ? "light" : "dark",
   );
@@ -23,134 +36,115 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  const handleLogout = async () => {
+    try {
+      setLogoutError("");
+      await logout();
+      setOpen(false);
+      nav("/");
+    } catch {
+      setLogoutError("Unable to log out. Please try again.");
+    }
+  };
+
   return (
-    <div className="app-shell">
-      <header className="site-header">
-        <div className="container-page flex h-20 items-center justify-between gap-4">
-          {/* Logo */}
-          <Link to="/" className="wordmark">
-            <span className="brand-mark">
-              <ShoppingBag size={20} strokeWidth={2} />
-            </span>
-            LetsBuyTogether
-          </Link>
-
-          {/* Desktop nav */}
-          <nav aria-label="Main navigation" className="hidden items-center gap-7 lg:flex">
-            <NavLink
-              to="/search"
-              className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
-            >
-              Browse deals
-            </NavLink>
-          </nav>
-
-          {/* Right side controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Theme toggle */}
-            <button
-              type="button"
-              className="theme-toggle"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            >
-              {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
-
-            {/* Auth buttons — desktop */}
-            <div className="hidden items-center gap-3 lg:flex">
-              {user ? (
-                <>
-                  <Link to="/search" className="nav-link">
-                    <Search size={15} className="inline mr-1" />
-                    Browse
-                  </Link>
-                  <span className="nav-link px-2 opacity-60">Hi, {user.firstName}</span>
-                  <button
-                    className="btn-secondary"
-                    onClick={() => {
-                      logout();
-                      nav("/");
-                    }}
-                  >
-                    Log out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link className="nav-link px-3" to="/login">
-                    Log in
-                  </Link>
-                  <Link className="btn-primary" to="/register">
-                    Get started
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* Mobile hamburger */}
-            <button
-              type="button"
-              className="theme-toggle lg:hidden"
-              aria-label={open ? "Close menu" : "Open menu"}
-              aria-expanded={open}
-              aria-controls="mobile-menu"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {open && (
-          <nav
-            id="mobile-menu"
-            aria-label="Mobile navigation"
-            className="container-page grid gap-3 border-t border-slate-200 py-5 lg:hidden"
-          >
-            <Link className="nav-link py-2" to="/search">
-              Browse deals
-            </Link>
-            {user ? (
-              <>
-                <span className="nav-link py-2 opacity-60">Logged in as {user.firstName}</span>
-                <button
-                  className="btn-secondary w-full"
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                    nav("/");
-                  }}
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link className="btn-secondary w-full text-center py-3" to="/login">
-                  Log in
-                </Link>
-                <Link className="btn-primary w-full text-center py-3" to="/register">
-                  Get started
-                </Link>
-              </>
-            )}
-          </nav>
-        )}
+    <div className="portal-shell">
+      <header className="portal-mobile-header">
+        <Link to="/" className="wordmark">
+          <ShoppingBag size={20} />
+          LetsBuyTogether
+        </Link>
+        <button
+          type="button"
+          className="theme-toggle"
+          aria-label={open ? "Close navigation" : "Open navigation"}
+          aria-expanded={open}
+          aria-controls="dashboard-sidebar"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </header>
+      <aside id="dashboard-sidebar" className={`portal-sidebar ${open ? "is-open" : ""}`}>
+        <Link to="/" className="wordmark portal-brand">
+          <span className="brand-mark">
+            <ShoppingBag size={19} />
+          </span>
+          <span>LetsBuyTogether</span>
+        </Link>
+        <div className="portal-nav-label">WORKSPACE</div>
+        <nav aria-label="Dashboard navigation" className="portal-nav">
+          <NavLink to="/" end>
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </NavLink>
+          <NavLink to="/search">
+            <ListFilter size={18} />
+            <span>Browse products</span>
+          </NavLink>
 
-      <main className="flex-1">{children}</main>
-
-      <footer className="site-footer">
-        <div className="container-page flex flex-wrap items-center justify-between gap-5">
-          <Link to="/" className="wordmark text-lg">
-            LetsBuyTogether
-          </Link>
-          <p>A good thing, shared.</p>
-          <Link to="/search">Browse deals</Link>
+          <NavLink to="/posts/new">
+            <PackagePlus size={18} />
+            <span>Post a product</span>
+          </NavLink>
+          {user && (
+            <NavLink to="/activity">
+              <Activity size={18} />
+              <span>My activity</span>
+            </NavLink>
+          )}
+          {user && (
+            <NavLink to="/profile">
+              <UserRound size={18} />
+              <span>My profile</span>
+            </NavLink>
+          )}
+        </nav>
+        <div className="portal-sidebar-bottom">
+          <button
+            type="button"
+            className="portal-setting"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            <span>{theme === "dark" ? "Light appearance" : "Dark appearance"}</span>
+          </button>
+          {user ? (
+            <>
+              <Link to="/profile" className="portal-account">
+                <span className="portal-avatar">
+                  {user.photoUrl ? (
+                    <img src={user.photoUrl} alt="" />
+                  ) : (
+                    user.username.slice(0, 1).toUpperCase()
+                  )}
+                </span>
+                <div>
+                  <strong>{user.username}</strong>
+                  <small>View your profile</small>
+                </div>
+              </Link>
+              <button type="button" className="portal-setting" onClick={handleLogout}>
+                <LogOut size={18} />
+                <span>Log out</span>
+              </button>
+            </>
+          ) : (
+            <div className="portal-auth">
+              <Link to="/login">Log in</Link>
+              <Link to="/register">Create account</Link>
+            </div>
+          )}
+          {logoutError && (
+            <p role="alert" className="portal-logout-error">
+              {logoutError}
+            </p>
+          )}
         </div>
-      </footer>
+      </aside>
+      <main className="portal-main" id="main-content">
+        {children}
+      </main>
     </div>
   );
 }

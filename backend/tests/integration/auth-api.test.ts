@@ -13,10 +13,16 @@ describe("API security and shape", () => {
     expect(r.status).toBe(401);
     expect(r.body.error.code).toBe("UNAUTHORIZED");
   });
-  it("rejects malformed registration", async () => {
+  it("requires Google for new accounts", async () => {
     const r = await request(app).post("/api/auth/register").send({ email: "bad" });
-    expect(r.status).toBe(400);
-    expect(r.body.error.code).toBe("VALIDATION_ERROR");
+    expect(r.status).toBe(410);
+    expect(r.body.error.code).toBe("GOOGLE_SIGNUP_REQUIRED");
+  });
+  it("requires authentication before completing a profile", async () => {
+    const response = await request(app)
+      .patch("/api/auth/profile")
+      .send({ username: "example", address: "12 Test Street", city: "Rabat" });
+    expect(response.status).toBe(401);
   });
   it("normal user token cannot access admin routes", async () => {
     const jwt = (await import("jsonwebtoken")).default;

@@ -13,7 +13,8 @@
     "start": "npm --prefix backend start",
     "test": "npm --prefix backend test",
     "dev:all": "npm --prefix backend run dev:all",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:migrate": "npm --prefix backend run db:migrate"
   },
   "devDependencies": {
     "prettier": "^3.3.3"

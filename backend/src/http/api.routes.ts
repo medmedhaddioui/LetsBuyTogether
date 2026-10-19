@@ -1,3 +1,5 @@
+import { productSearchRoutes } from "../modules/product-searches/product-search.routes.js";
+import { productPostRoutes } from "../modules/product-posts/product-post.routes.js";
 import { Router } from "express";
 import { adminRoutes } from "../modules/admin/admin.routes.js";
 import { authRoutes } from "../modules/auth/auth.routes.js";
@@ -15,6 +17,8 @@ apiRoutes.get("/health", (_request, response) => {
   response.json({ success: true, data: { status: "ok" } });
 });
 apiRoutes.use("/auth", authRoutes);
+apiRoutes.use("/product-searches", productSearchRoutes);
+apiRoutes.use("/product-posts", productPostRoutes);
 apiRoutes.use("/promotions", promotionRoutes);
 apiRoutes.use("/groups", groupRoutes);
 apiRoutes.use("/users", userRoutes);

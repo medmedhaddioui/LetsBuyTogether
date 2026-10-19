@@ -10,7 +10,8 @@
     "lint": "eslint src tests --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:all": "tsx watch --exclude \"../frontend/**\" src/server.ts"
+    "dev:all": "tsx watch --exclude \"../frontend/**\" src/server.ts",
+    "db:migrate": "tsx src/database/migrate.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,10 +19,12 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.1",
+    "google-auth-library": "^11.3.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.23.1",
+    "sharp": "^0.35.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -3,6 +3,14 @@ import { ZodError } from "zod";
 import { AppError } from "../http/app-error.js";
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err?.type === "entity.too.large")
+    return void res.status(413).json({
+      success: false,
+      error: {
+        code: "UPLOAD_TOO_LARGE",
+        message: "The file is too large. Choose an image under 2 MB.",
+      },
+    });
   if (err instanceof AppError)
     return void res
       .status(err.status)

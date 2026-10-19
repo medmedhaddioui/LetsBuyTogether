@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
+import { closeDatabase } from "./database/connection.js";
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { frontendDist, frontendRoot } from "./config/paths.js";
@@ -41,6 +42,7 @@ const shutdown = () => {
   timeout.unref();
   server.close(async () => {
     await vite?.close();
+    await closeDatabase();
     clearTimeout(timeout);
     process.exit(0);
   });
